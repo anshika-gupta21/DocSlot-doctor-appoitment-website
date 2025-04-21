@@ -1,25 +1,31 @@
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken";
 
-// user authentication middleware
+// User authentication middleware
 const authUser = async (req, res, next) => {
-
   try {
+    const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer Token
 
-    const { token } = req.headers
     if (!token) {
-      return res.json({ success: false, message: 'Not Authorized Login Again' })
+      return res
+        .status(401)
+        .json({ success: false, message: "Not Authorized. Login Again" });
     }
 
-    const token_decode = jwt.verify(token, process.env.JWT_SECRET)
-    req.body.userId = token_decode.id
+    // Verify token using JWT_SECRET
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined in environment variables");
+    }
 
-    next()
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.body.userId = decoded.id;
 
+    next(); // Proceed to next middleware or route
   } catch (error) {
-    console.log(error)
-    res.json({ success: false, message: error.message })
+    console.log(error);
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid or Expired Token" });
   }
+};
 
-}
-
-export default authUser
+export default authUser;
