@@ -23,13 +23,31 @@ const Appointment = () => {
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState("");
 
+  useEffect(() => {
+    if (!doctors.length) {
+      getDoctorsData();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (doctors.length && docId) {
+      fetchDocInfo();
+    }
+  }, [doctors, docId]);
+
+  useEffect(() => {
+    console.log("Doctors in Appointment.jsx:", doctors);
+  }, [doctors]);
+
   const fetchDocInfo = async () => {
     const docInfo = doctors.find((doc) => doc._id === docId);
+
     setDocInfo(docInfo);
+    console.log(docInfo);
   };
 
   const getAvailableSlots = async () => {
-    if (!docInfo || !docInfo.slots_booked) {
+    if (!docInfo && !docInfo.slots_booked) {
       console.log("Doctor info not available yet");
       return;
     }
@@ -113,7 +131,7 @@ const Appointment = () => {
       const { data } = await axios.post(
         backendUrl + "/api/user/book-appointment",
         { docId, slotDate, slotTime },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (data.success) {

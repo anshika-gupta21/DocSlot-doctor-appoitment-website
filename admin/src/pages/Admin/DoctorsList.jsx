@@ -7,6 +7,7 @@ const DoctorsList = () => {
 
   useEffect(() => {
     if (aToken) {
+      console.log("Received token:", aToken);
       getAllDoctors()
     }
   }, [aToken])

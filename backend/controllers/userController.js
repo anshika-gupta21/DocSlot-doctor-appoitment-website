@@ -122,9 +122,11 @@ const updateProfile = async (req, res) => {
 const bookAppointment = async (req, res) => {
   try {
     const { userId, docId, slotDate, slotTime } = req.body;
+    console.log("Booking request:", { docId, userId, slotDate, slotTime });
+    console.log("helllo");
 
     // Fetch doctor data
-    const docData = await doctorModel.findById(docId).select("-password");
+    const docData = await doctorModel.findOne({ docId }).select("-password");
 
     if (!docData) {
       return res
@@ -182,7 +184,7 @@ const bookAppointment = async (req, res) => {
     await newAppointment.save();
 
     // Update doctor slot bookings
-    await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+    await doctorModel.findOneAndUpdate({ docId }, { slots_booked });
 
     res.status(200).json({ success: true, message: "Appointment Booked" });
   } catch (error) {
@@ -221,14 +223,14 @@ const cancelAppointment = async (req, res) => {
 
     // releasing doctor slot
     const { docId, slotDate, slotTime } = appointmentData;
-    const doctorData = await doctorModel.findById(docId);
+    const doctorData = await doctorModel.findOne({ docId });
     let slots_booked = doctorData.slots_booked;
 
     slots_booked[slotDate] = slots_booked[slotDate].filter(
       (e) => e !== slotTime
     );
 
-    await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+    await doctorModel.findOneAndUpdate({ docId }, { slots_booked });
 
     res.json({ success: true, message: "Appointment Cancelled" });
   } catch (error) {
